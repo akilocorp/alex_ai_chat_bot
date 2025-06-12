@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: START ---
 # This MUST be at the very top, before any other imports that might touch sqlite3
 __import__('pysqlite3')
@@ -9,11 +10,17 @@ import os
 import json
 import uuid
 from langchain_chroma.vectorstores import Chroma
+=======
+import os
+import json
+import uuid
+>>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
 from langchain_community.chat_models.tongyi import ChatTongyi
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 import streamlit as st
+<<<<<<< HEAD
 from dotenv import load_dotenv # Import load_dotenv
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from operator import itemgetter
@@ -36,13 +43,19 @@ MONGO_DB_NAME = get_secret("MONGO_DB_NAME")
 MONGO_COLLECTION_NAME = get_secret("MONGO_COLLECTION_NAME")
 from langchain_core.messages import HumanMessage, AIMessage
 
+=======
+>>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
 
 # 样式
 st.markdown("""
 <style>
 .message-container { display: flex; align-items: flex-start; margin-bottom: 18px; }
 .user-avatar, .assistant-avatar {
+<<<<<<< HEAD
     width: 40px; height: 40px; Mongoborder-radius: 50%; display: flex; align-items: center; justify-content: center;
+=======
+    width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+>>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
     margin: 0 10px; font-size: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 .user-avatar { background: #4285F4; }
@@ -50,18 +63,25 @@ st.markdown("""
 .user-message {
     background: #E3F2FD; padding: 10px 14px; border-radius: 18px 18px 18px 4px;
     min-width: 10px; max-width: 70%; position: relative; text-align: left;
+<<<<<<< HEAD
     color: black;
+=======
+>>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
 }
 .assistant-message {
     background: #FFF8E1; padding: 10px 14px; border-radius: 18px 18px 4px 18px;
     min-width: 10px; max-width: 70%; position: relative; text-align: left;
+<<<<<<< HEAD
     color: black; 
+=======
+>>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
 }
 .user-container { justify-content: flex-start; }
 .assistant-container { justify-content: flex-end; }
 </style>
 """, unsafe_allow_html=True)
 
+<<<<<<< HEAD
 # Get the API key from the environment variables
 DASHSCOPE_API_KEY = get_secret("DASHSCOPE_API_KEY")
 
@@ -129,10 +149,29 @@ if "user_id" not in st.session_state:
 render_sidebar_chat_list(mongo_collection)
 
 
+=======
+# API Key
+os.environ["DASHSCOPE_API_KEY"] = "sk-15292fd22b02419db281e42552c0e453"
+
+# 模型
+llm = ChatTongyi(model_name="qwen-plus")
+
+# 系统提示
+try:
+    with open('prompt.txt', 'r', encoding='utf-8') as f:
+        system_prompt = f.read()
+except FileNotFoundError:
+    system_prompt = "You are 'Alex', a study participant texting warmly."
+
+# 唯一用户ID
+if "user_id" not in st.session_state:
+    st.session_state.user_id = str(uuid.uuid4())
+>>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
 user_id = st.session_state.user_id
 
 # 历史工厂：为每个用户单独创建
 def history_factory(session_id):
+<<<<<<< HEAD
     return MongoDBChatMessageHistory(session_id=session_id, collection=mongo_collection)
 
 # 提示模板
@@ -179,6 +218,21 @@ rag_chain = (
 
 chain_with_history = RunnableWithMessageHistory(
     rag_chain,
+=======
+    return StreamlitChatMessageHistory(key=f"chat_history_{session_id}")
+
+# 提示模板
+prompt = ChatPromptTemplate.from_messages([
+    ("system", system_prompt),
+    MessagesPlaceholder(variable_name="history"),
+    ("human", "{input}"),
+])
+
+# 带历史的链
+chain = prompt | llm
+chain_with_history = RunnableWithMessageHistory(
+    chain,
+>>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
     history_factory,
     input_messages_key="input",
     history_messages_key="history",
@@ -230,8 +284,11 @@ if user_input:
             {"input": user_input},
             config={"configurable": {"session_id": user_id}}
         )
+<<<<<<< HEAD
         
         # --- END MANUAL HISTORY SAVING ---
+=======
+>>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
         # 显示AI回复
         st.markdown(f'''
         <div class="message-container assistant-container">
@@ -272,14 +329,20 @@ st.markdown(f"""
 <script>
     window.addEventListener('message', function(event) {{
         if (event.data.type === 'clear-chat' && event.data.user_id === '{user_id}') {{
+<<<<<<< HEAD
             const url = new URL(window.location);
             url.searchParams.set('clear_chat_history_db', '{user_id}');
             window.parent.postMessage({{type: 'chat-cleared', user_id: '{user_id}'}}, '*');
             window.location.href = url.toString();
+=======
+            window.parent.postMessage({{type: 'chat-cleared', user_id: '{user_id}'}}, '*');
+            window.location.reload();
+>>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
         }}
     }});
 </script>
 """, unsafe_allow_html=True)
+<<<<<<< HEAD
 
 # --- Streamlit Internal Function to Clear DB History ---
 if st.runtime.exists():
@@ -292,3 +355,5 @@ if st.runtime.exists():
         st.experimental_set_query_params(**new_query_params)
         
         st.rerun()
+=======
+>>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
