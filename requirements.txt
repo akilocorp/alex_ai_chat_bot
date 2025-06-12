@@ -1,5 +1,5 @@
-langchain-community==0.0.401
-langchain-openai==0.0.91
+langchain-community==0.3.25
+langchain-openai==0.3.22
 streamlit==1.29.0
 python-dotenv==1.0.0
 pymongo==4.13.1
