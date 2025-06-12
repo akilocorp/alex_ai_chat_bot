@@ -1,7 +1,7 @@
 import os
 import json
 import uuid
-from langchain_chroma.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 from langchain_community.chat_models.tongyi import ChatTongyi
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
