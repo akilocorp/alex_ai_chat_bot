@@ -1,3 +1,10 @@
+# --- SHORT-TERM FIX FOR SQLITE3 ERROR: START ---
+# This MUST be at the very top, before any other imports that might touch sqlite3
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+# --- SHORT-TERM FIX FOR SQLITE3 ERROR: END ---
+
 import os
 import json
 import uuid
@@ -15,12 +22,7 @@ from database.database_utils import get_mongo_client_raw, MongoDBChatMessageHist
 load_dotenv()
 from langchain_openai.embeddings import OpenAIEmbeddings
 from components.sidebar_chat_list import render_sidebar_chat_list
-# --- SHORT-TERM FIX FOR SQLITE3 ERROR: START ---
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
-# --- SHORT-TERM FIX FOR SQLITE3 ERROR: END ---
-# --- Function to get secret, prioritizing Streamlit secrets for deployment ---
+
 def get_secret(key):
     # Try to get from Streamlit secrets (for deployed apps)
     if key in st.secrets:
