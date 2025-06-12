@@ -10,6 +10,7 @@ langchain-core~=0.3.65
 python-dotenv~=1.0.1
 protobuf~=3.20 # Or specify a compatible range like '<=3.20.3' or '~=3.20'
 pysqlite3-binary~=0.5 
+dashscope~=1.23
 
 
 
