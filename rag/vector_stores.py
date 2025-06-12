@@ -5,7 +5,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai.embeddings import OpenAIEmbeddings
 import os
 from dotenv import load_dotenv
-from langchain_chroma import Chroma
+from langchain_chroma.vectorstores import Chroma
 from main import get_secret
 load_dotenv()
 #Load the document
