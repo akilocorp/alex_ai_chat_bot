@@ -1,26 +1,25 @@
-<<<<<<< HEAD
+
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: START ---
 # This MUST be at the very top, before any other imports that might touch sqlite3
 __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: END ---
-
+from pymongo.database import Database  # NEW IMPORT for type hinting Database
+from pymongo.collection import Collection # Ensure this is imported for Collection type hinting (might already be there)
+from langchain_core.utils.utils import convert_to_secret_str
 import os
 import json
 import uuid
 from langchain_chroma.vectorstores import Chroma
-=======
-import os
-import json
-import uuid
->>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
+
+
 from langchain_community.chat_models.tongyi import ChatTongyi
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 import streamlit as st
-<<<<<<< HEAD
+
 from dotenv import load_dotenv # Import load_dotenv
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from operator import itemgetter
@@ -38,24 +37,48 @@ def get_secret(key):
     return os.getenv(key)
 
 # --- MongoDB Atlas Connection Details & Client ---
-MONGO_URI = get_secret("MONGO_URI")
-MONGO_DB_NAME = get_secret("MONGO_DB_NAME")
-MONGO_COLLECTION_NAME = get_secret("MONGO_COLLECTION_NAME")
+DASHSCOPE_API_KEY = get_secret("DASHSCOPE_API_KEY")
+OPENAI_API_KEY = get_secret("OPENAI_API_KEY")
+MONGO_URI_VAL = get_secret("MONGO_URI") # Use a temporary variable for clarity during check
+MONGO_DB_NAME_VAL = get_secret("MONGO_DB_NAME") # Use a temporary variable for clarity during check
+MONGO_COLLECTION_NAME_VAL = get_secret("MONGO_COLLECTION_NAME") # Use a temporary variable for clarity during check
+
+print(f"--- DEBUG MAIN: API Keys loaded: DASHSCOPE_API_KEY starts with {DASHSCOPE_API_KEY[:5] if DASHSCOPE_API_KEY else 'N/A'}, OPENAI_API_KEY starts with {OPENAI_API_KEY[:5] if OPENAI_API_KEY else 'N/A'} ---")
+
+
+# --- IMPORTANT FIX: Add explicit checks for all required secret values ---
+# This ensures that if a secret is missing (returns None), the app stops cleanly.
+if not isinstance(DASHSCOPE_API_KEY, str) or not DASHSCOPE_API_KEY:
+    st.error("DASHSCOPE_API_KEY not found or invalid. Please set it in your .env file locally or in Streamlit Cloud secrets.")
+    st.stop()
+if not isinstance(OPENAI_API_KEY, str) or not OPENAI_API_KEY:
+    st.error("OPENAI_API_KEY not found or invalid. This is needed for embeddings. Please set it.")
+    st.stop()
+if not isinstance(MONGO_URI_VAL, str) or not MONGO_URI_VAL:
+    st.error("MONGO_URI not found or invalid. Please set it in your .env file locally or in Streamlit Cloud secrets.")
+    st.stop()
+if not isinstance(MONGO_DB_NAME_VAL, str) or not MONGO_DB_NAME_VAL:
+    st.error("MONGO_DB_NAME not found or invalid. Please set it in your .env file locally or in Streamlit Cloud secrets.")
+    st.stop()
+if not isinstance(MONGO_COLLECTION_NAME_VAL, str) or not MONGO_COLLECTION_NAME_VAL:
+    st.error("MONGO_COLLECTION_NAME not found or invalid. Please set it in your .env file locally or in Streamlit Cloud secrets.")
+    st.stop()
+
+
 from langchain_core.messages import HumanMessage, AIMessage
 
-=======
->>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
+#Change Api Keys to Secret Str
+Dashscope_api=convert_to_secret_str(DASHSCOPE_API_KEY)
+Openai_api=convert_to_secret_str(OPENAI_API_KEY)
 
 # 样式
 st.markdown("""
 <style>
 .message-container { display: flex; align-items: flex-start; margin-bottom: 18px; }
 .user-avatar, .assistant-avatar {
-<<<<<<< HEAD
+
     width: 40px; height: 40px; Mongoborder-radius: 50%; display: flex; align-items: center; justify-content: center;
-=======
-    width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
->>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
+
     margin: 0 10px; font-size: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 .user-avatar { background: #4285F4; }
@@ -63,32 +86,24 @@ st.markdown("""
 .user-message {
     background: #E3F2FD; padding: 10px 14px; border-radius: 18px 18px 18px 4px;
     min-width: 10px; max-width: 70%; position: relative; text-align: left;
-<<<<<<< HEAD
     color: black;
-=======
->>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
 }
 .assistant-message {
     background: #FFF8E1; padding: 10px 14px; border-radius: 18px 18px 4px 18px;
     min-width: 10px; max-width: 70%; position: relative; text-align: left;
-<<<<<<< HEAD
     color: black; 
-=======
->>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
 }
 .user-container { justify-content: flex-start; }
 .assistant-container { justify-content: flex-end; }
 </style>
 """, unsafe_allow_html=True)
 
-<<<<<<< HEAD
-# Get the API key from the environment variables
-DASHSCOPE_API_KEY = get_secret("DASHSCOPE_API_KEY")
 
+# Get the API key from the environment variables
 
 
 # 模型
-llm = ChatTongyi(model="qwen-plus", api_key=DASHSCOPE_API_KEY)
+llm = ChatTongyi(model="qwen-plus", api_key=Dashscope_api)
 
 # --- Cached MongoDB Client Connection (using get_mongo_client_raw from database_utils) ---
 @st.cache_resource
@@ -101,25 +116,24 @@ def get_cached_mongo_client(mongo_uri):
     except Exception as e:
         st.error(f"Could not connect to MongoDB Atlas: {e}. Please check your MONGO_URI.")
         st.stop()
-mongo_client = get_cached_mongo_client(MONGO_URI)
-mongo_db = mongo_client[MONGO_DB_NAME]
-mongo_collection = mongo_db[MONGO_COLLECTION_NAME]
+mongo_client = get_cached_mongo_client(MONGO_URI_VAL)
+mongo_db:Database = mongo_client[MONGO_DB_NAME_VAL]
+mongo_collection:Collection = mongo_db[MONGO_COLLECTION_NAME_VAL]
 
-@st.cache_resource
+#Get the parameters from the link
+response_id=st.query_params.get("responseId", ["N/A"])[0]
+agent_id=st.query_params.get("agentId", ["N/A"])[0]
+survey_id=st.query_params.get("surveyId", ["N/A"])[0]
+
 
 # --- RAG Setup: Load Vector Store and Create Retriever ---
 @st.cache_resource # Cache the vector store and embeddings to avoid reloading on every rerun
 def load_and_configure_retriever():
     """Loads the OpenAI embeddings and the Chroma vector store, then creates a retriever."""
-    api_key=get_secret("OPENAI_API_KEY")
-    embeddings_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=api_key)
+    
+    embeddings_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=Openai_api)
 
 
-     # Get the actual count of documents in your Chroma collection
-    try:
-        actual_doc_count = vector_store._collection.count()
-    except Exception:
-        actual_doc_count = 5 # Assume 5 based on the warning you're seeing
     
     # Load the Chroma vector store from the persistent directory
     # Ensure this path matches where you saved your vector store
@@ -135,7 +149,7 @@ def load_and_configure_retriever():
         search_kwargs={
             "k": 3,           # Number of documents to retrieve
             "lambda_mult": 0.5,
-             "fetch_k":actual_doc_count # Balance between similarity and diversity (0.0 = diversity, 1.0 = similarity)
+             "fetch_k":2 # Balance between similarity and diversity (0.0 = diversity, 1.0 = similarity)
         }
     )
     return retriever
@@ -149,30 +163,18 @@ if "user_id" not in st.session_state:
 render_sidebar_chat_list(mongo_collection)
 
 
-=======
-# API Key
-os.environ["DASHSCOPE_API_KEY"] = "sk-15292fd22b02419db281e42552c0e453"
 
-# 模型
-llm = ChatTongyi(model_name="qwen-plus")
-
-# 系统提示
-try:
-    with open('prompt.txt', 'r', encoding='utf-8') as f:
-        system_prompt = f.read()
-except FileNotFoundError:
-    system_prompt = "You are 'Alex', a study participant texting warmly."
-
-# 唯一用户ID
-if "user_id" not in st.session_state:
-    st.session_state.user_id = str(uuid.uuid4())
->>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
 user_id = st.session_state.user_id
 
 # 历史工厂：为每个用户单独创建
 def history_factory(session_id):
-<<<<<<< HEAD
-    return MongoDBChatMessageHistory(session_id=session_id, collection=mongo_collection)
+    return MongoDBChatMessageHistory(
+        session_id=session_id, 
+        collection=mongo_collection,
+        response_id=response_id,
+        agent_id=agent_id,
+        survey_id=survey_id
+           )
 
 # 提示模板
 rag_prompt = ChatPromptTemplate.from_messages([
@@ -218,28 +220,13 @@ rag_chain = (
 
 chain_with_history = RunnableWithMessageHistory(
     rag_chain,
-=======
-    return StreamlitChatMessageHistory(key=f"chat_history_{session_id}")
-
-# 提示模板
-prompt = ChatPromptTemplate.from_messages([
-    ("system", system_prompt),
-    MessagesPlaceholder(variable_name="history"),
-    ("human", "{input}"),
-])
-
-# 带历史的链
-chain = prompt | llm
-chain_with_history = RunnableWithMessageHistory(
-    chain,
->>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
     history_factory,
     input_messages_key="input",
     history_messages_key="history",
 )
 
 # 标题
-st.header("AI Chat Interface")
+st.header("Alex")
 
 # 获取当前用户的历史记录
 current_history = history_factory(user_id)
@@ -284,11 +271,6 @@ if user_input:
             {"input": user_input},
             config={"configurable": {"session_id": user_id}}
         )
-<<<<<<< HEAD
-        
-        # --- END MANUAL HISTORY SAVING ---
-=======
->>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
         # 显示AI回复
         st.markdown(f'''
         <div class="message-container assistant-container">
@@ -334,15 +316,10 @@ st.markdown(f"""
             url.searchParams.set('clear_chat_history_db', '{user_id}');
             window.parent.postMessage({{type: 'chat-cleared', user_id: '{user_id}'}}, '*');
             window.location.href = url.toString();
-=======
-            window.parent.postMessage({{type: 'chat-cleared', user_id: '{user_id}'}}, '*');
-            window.location.reload();
->>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
         }}
     }});
 </script>
 """, unsafe_allow_html=True)
-<<<<<<< HEAD
 
 # --- Streamlit Internal Function to Clear DB History ---
 if st.runtime.exists():
@@ -355,5 +332,4 @@ if st.runtime.exists():
         st.experimental_set_query_params(**new_query_params)
         
         st.rerun()
-=======
->>>>>>> ca55c520218a1cd38b7a4975635811ef48671d65
+
