@@ -39,7 +39,7 @@ vector_store= Chroma.from_documents(
         documents=page_split,
         embedding=embeddings,
         #the persist directory is the name of the vector file
-        persist_directory="./alex_characteristics",
+        persist_directory="./new_characteristics",
         collection_name="social_experiment",
         
     )
