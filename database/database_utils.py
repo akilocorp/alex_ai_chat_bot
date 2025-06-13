@@ -28,9 +28,12 @@ def get_mongo_client_raw(mongo_uri: str):
         raise ConnectionError(f"Could not connect to MongoDB Atlas: {e}") from e
 
 class MongoDBChatMessageHistory(BaseChatMessageHistory):
-    def __init__(self, session_id: str, collection: Collection):
+    def __init__(self, session_id: str, collection: Collection, survey_id:str, agent_id:str, response_id:str):
         self.session_id = session_id
         self.collection = collection
+        self.survey_id=survey_id
+        self.response_id=response_id
+        self.agent_id=agent_id
         logger.info(f"MongoDBChatMessageHistory.__init__: Initializing for session_id: {session_id}")
 
         # --- MODIFIED: NO UPSERT/INSERTION IN __init__ ---
@@ -70,7 +73,7 @@ class MongoDBChatMessageHistory(BaseChatMessageHistory):
             return retrieved_messages
         return []
 
-    def add_message(self, message: BaseMessage) -> None:
+    def add_message(self, message: BaseMessage, response_id, survey_id, agent_id) -> None:
         message_dict = {"type": message.type, "content": message.content}
         logger.info(f"add_message: Attempting to add message for session {self.session_id}: {message_dict['content'][:50]}...")
         

@@ -28,11 +28,10 @@ splitted_pages=markdownsplit.split_text(pages[0].page_content)
 #Recursive Splitters
 recursive_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=20)
 page_split = recursive_splitter.split_documents(splitted_pages)
-page_split
 
 #Embeddings
 api_key=get_secret("OPENAI_API_KEY")
-embeddings=OpenAIEmbeddings(model="text-embedding-3-large", api_key=api_key)
+embeddings=OpenAIEmbeddings(model="text-embedding-3-large", )
 
 
 #Create the vecor stores
