@@ -84,9 +84,7 @@ st.markdown("""
 <style>
 .message-container { display: flex; align-items: flex-start; margin-bottom: 18px; }
 .user-avatar, .assistant-avatar {
-
     width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-
     margin: 0 10px; font-size: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 .user-avatar { background: #4285F4; }
@@ -218,6 +216,8 @@ for msg in current_history.messages:
             </div>
         </div>
         ''', unsafe_allow_html=True)
+        
+
 
 # 用户输入处理
 user_input = st.chat_input("Type your message...")
@@ -233,6 +233,7 @@ if user_input:
     ''', unsafe_allow_html=True)
     
     # 获取模型响应
+    
     try:
         response = chain_with_history.invoke(
             {"input": user_input},
@@ -247,6 +248,11 @@ if user_input:
             </div>
         </div>
         ''', unsafe_allow_html=True)
+        
+        current_history_obj = history_factory(user_id)
+        current_history_obj.add_message(HumanMessage(content=user_input))
+        current_history_obj.add_message(AIMessage(content=response.content))
+
     except Exception as e:
         # 显示错误信息
         st.markdown(f'''
@@ -278,7 +284,6 @@ st.markdown(f"""
 <script>
     window.addEventListener('message', function(event) {{
         if (event.data.type === 'clear-chat' && event.data.user_id === '{user_id}') {{
-<<<<<<< HEAD
             const url = new URL(window.location);
             url.searchParams.set('clear_chat_history_db', '{user_id}');
             window.parent.postMessage({{type: 'chat-cleared', user_id: '{user_id}'}}, '*');

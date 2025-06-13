@@ -54,7 +54,7 @@ class MongoDBChatMessageHistory(BaseChatMessageHistory):
                         {"$set": {"messages": []}} 
                     )
                     self.conversations = self.collection.find_one({"session_id": self.session_id}) # Re-fetch after fix
-                logger.info(f"__init__: Session '{session_id}' loaded. Messages count: {len(self.conversations.get('messages', []))}")
+                # logger.info(f"__init__: Session '{session_id}' loaded. Messages count: {len(self.conversations.get('messages', []))}")
             else:
                 logger.info(f"__init__: Session '{session_id}' not found. Document will be created by add_message on first use.")
                 # self.conversations remains None, which is correct here.
@@ -64,7 +64,7 @@ class MongoDBChatMessageHistory(BaseChatMessageHistory):
 
     @property
     @override 
-    def messages(self) -> list[BaseMessage]:
+    def messages(self) -> list[BaseMessage]: # type: ignore # 
         doc = self.collection.find_one({"session_id": self.session_id})
         if doc and doc.get("messages") is not None:
             retrieved_messages = []
@@ -106,7 +106,7 @@ class MongoDBChatMessageHistory(BaseChatMessageHistory):
             if result.matched_count > 0 or result.upserted_id: # Check if matched an existing doc or inserted a new one
                 logger.info(f"add_message: Message added successfully for session {self.session_id}. Matched: {result.matched_count}, Upserted ID: {result.upserted_id}.")
             else:
-                logger.warning(f"add_message: No document matched or upserted for session {self.session_id}. This should not happen.", file=sys.stderr)
+                logger.warning(f"add_message: No document matched or upserted for session {self.session_id}. This should not happen.",)
         except Exception as e:
             logger.error(f"add_message: ERROR adding message for session {self.session_id}: {e}", exc_info=True)
 
