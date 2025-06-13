@@ -1,9 +1,7 @@
 
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: START ---
 # This MUST be at the very top, before any other imports that might touch sqlite3
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: END ---
 from pymongo.database import Database  # NEW IMPORT for type hinting Database
 from pymongo.collection import Collection # Ensure this is imported for Collection type hinting (might already be there)
@@ -248,7 +246,6 @@ if user_input:
             </div>
         </div>
         ''', unsafe_allow_html=True)
-        
 
     except Exception as e:
         # 显示错误信息
