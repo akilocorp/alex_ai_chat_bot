@@ -1,6 +1,7 @@
 
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: START ---
 # This MUST be at the very top, before any other imports that might touch sqlite3
+__import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: END ---
