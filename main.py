@@ -118,7 +118,7 @@ survey_id=get_query_param_value("surveyId")
 
 
 
-retriever = get_retriever(persist_directory="/alex_characteristics", collection_name="social_experiment", _openai_api_key=OPENAI_API_KEY)
+retriever = get_retriever(persist_directory="./alex_characteristics", collection_name="social_experiment", _openai_api_key=OPENAI_API_KEY)
 
 # 唯一用户ID
 if "user_id" not in st.session_state:
