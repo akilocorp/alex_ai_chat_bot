@@ -199,8 +199,9 @@ if os.path.exists(persist_dir):
         
         if contents:
             for item in contents:
-                print(item)
-                cont.append(item)
+                if item is "b7893e57-d932-4d4b-96a1-412897d50c4b":
+
+                    cont.append(item)
             st.header(f"Files{cont}")
         else:
             print(f"The folder '{persist_dir}' is empty.")
