@@ -190,7 +190,7 @@ chain_with_history = RunnableWithMessageHistory(
 
 # 标题
 
-persist_dir = "../alex_characteristics"
+persist_dir = ".../alex_characteristics"
 if os.path.exists(persist_dir):
     st.header("It Works")
    
