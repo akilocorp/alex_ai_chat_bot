@@ -8,11 +8,12 @@ from langchain_core.utils.utils import convert_to_secret_str
 # --- RAG Setup: Load Vector Store and Create Retriever ---
 # This function encapsulates all RAG setup (embeddings, Chroma load, retriever config)
 @st.cache_resource(show_spinner="Loading AI knowledge base...") # Show spinner while loading
-def get_retriever(persist_directory: str, collection_name: str, _openai_api_key):
+def get_retriever(persist_directory: str, collection_name: str, _openai_api_key: str ):
     print("--- DEBUG retriever_setup: Inside get_retriever function ---") 
     
     # Use the SecretStr object directly
-    embeddings_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=_openai_api_key)
+    _open_ai_key=convert_to_secret_str(_openai_api_key)
+    embeddings_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=_open_ai_key)
     
     try:
         vector_store = Chroma(
