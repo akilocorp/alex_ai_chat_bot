@@ -9,13 +9,6 @@ sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: END ---
 # --- NEW DEBUG: SQLITE3 VERSION CHECK ---
 import sqlite3 # Import the standard sqlite3 module *after* the override attempt
-logger.info(f"DEBUG SQLITE3: Python's sqlite3 module is now loading from: {sys.modules['sqlite3'].__file__}")
-logger.info(f"DEBUG SQLITE3: The linked SQLite3 C library version is: {sqlite3.sqlite_version}")
-if sqlite3.sqlite_version < '3.35.0':
-    print(f"DEBUG SQLITE3: WARNING! SQLite3 version ({sqlite3.sqlite_version}) is still below 3.35.0 required by ChromaDB. This is likely the cause of the error.", file=sys.stderr)
-else:
-    print(f"DEBUG SQLITE3: SUCCESS! SQLite3 version ({sqlite3.sqlite_version}) is >= 3.35.0, as required by ChromaDB.")
-# --- END NEW DEBUG ---
 from pymongo.database import Database  # NEW IMPORT for type hinting Database
 from pymongo.collection import Collection # Ensure this is imported for Collection type hinting (might already be there)
 from langchain_core.utils.utils import convert_to_secret_str
@@ -36,7 +29,22 @@ from database.database_utils import get_mongo_client_raw, MongoDBChatMessageHist
 from database.mongo_setup import get_mongo_db_connection
 # Load environment variables from .env file
 from langchain_openai.embeddings import OpenAIEmbeddings
+folder_path = "./alex_characteristics"
+if os.path.exists(folder_path):
+    if os.path.isdir(folder_path):
+        # List all files and directories inside it
+        contents = os.listdir(folder_path)
+        if contents:
+            for item in contents:
+                logger.info(item)
+        else:
+            logger.info(f"The folder '{folder_path}' is empty.")
+    else:
+        logger.info(f"Error: '{folder_path}' exists but is not a directory.")
+else:
+    logger.info(f"Error: The folder '{folder_path}' does not exist.")
 
+print("--- End of contents ---")
 load_dotenv()
 # from components.sidebar_chat_list import render_sidebar_chat_list
 def get_query_param_value(param_key: str, default_val: str = "N/A") -> str:
