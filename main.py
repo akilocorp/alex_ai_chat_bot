@@ -3,12 +3,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: START ---
 # This MUST be at the very top, before any other imports that might touch sqlite3
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
-# --- SHORT-TERM FIX FOR SQLITE3 ERROR: END ---
-# --- NEW DEBUG: SQLITE3 VERSION CHECK ---
-import sqlite3 # Import the standard sqlite3 module *after* the override attempt
+
 from pymongo.database import Database  # NEW IMPORT for type hinting Database
 from pymongo.collection import Collection # Ensure this is imported for Collection type hinting (might already be there)
 from langchain_core.utils.utils import convert_to_secret_str
