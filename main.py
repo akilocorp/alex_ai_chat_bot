@@ -79,7 +79,7 @@ st.markdown("""
 .message-container { display: flex; align-items: flex-start; margin-bottom: 18px; }
 .user-avatar, .assistant-avatar {
 
-    width: 40px; height: 40px; Mongoborder-radius: 50%; display: flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
 
     margin: 0 10px; font-size: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
@@ -101,7 +101,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# Get the API key from the environment variables
+
 
 
 # 模型
@@ -117,12 +117,11 @@ survey_id=st.query_params.get("surveyId", ["N/A"])[0]
 
 
 retriever = get_retriever(persist_directory="./alex_characteristics", collection_name="social_experiment", openai_api_key=Openai_api)
-# --- End RAG Setup ---
+
 # 唯一用户ID
 if "user_id" not in st.session_state:
     st.session_state.user_id = str(uuid.uuid4())
 
-# render_sidebar_chat_list(mongo_collection)
 
 
 
