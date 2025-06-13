@@ -5,6 +5,15 @@ __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: END ---
+# --- NEW DEBUG: SQLITE3 VERSION CHECK ---
+import sqlite3 # Import the standard sqlite3 module *after* the override attempt
+print(f"DEBUG SQLITE3: Python's sqlite3 module is now loading from: {sys.modules['sqlite3'].__file__}")
+print(f"DEBUG SQLITE3: The linked SQLite3 C library version is: {sqlite3.sqlite_version}")
+if sqlite3.sqlite_version < '3.35.0':
+    print(f"DEBUG SQLITE3: WARNING! SQLite3 version ({sqlite3.sqlite_version}) is still below 3.35.0 required by ChromaDB. This is likely the cause of the error.", file=sys.stderr)
+else:
+    print(f"DEBUG SQLITE3: SUCCESS! SQLite3 version ({sqlite3.sqlite_version}) is >= 3.35.0, as required by ChromaDB.")
+# --- END NEW DEBUG ---
 from pymongo.database import Database  # NEW IMPORT for type hinting Database
 from pymongo.collection import Collection # Ensure this is imported for Collection type hinting (might already be there)
 from langchain_core.utils.utils import convert_to_secret_str
