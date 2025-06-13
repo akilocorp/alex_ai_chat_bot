@@ -77,39 +77,61 @@ class MongoDBChatMessageHistory(BaseChatMessageHistory):
         return []
 
     # MODIFIED: add_message now handles document creation atomically
+    
+    # FIX START: add_message is now more robust against initial document state
     def add_message(self, message: BaseMessage) -> None:
         message_dict = {"type": message.type, "content": message.content}
         logger.info(f"add_message: Attempting to add message for session {self.session_id}: {message_dict['content'][:50]}...")
         
         try:
-            # Define fields to set ONLY IF the document is newly inserted via upsert
+            # 1. Define fields to set ONLY IF the document is newly inserted via upsert
             set_on_insert_fields = {
-                "messages": [],  # Ensure messages array is created on first insert
-                "created_at": datetime.now(), # Add a timestamp
-                "response_id": self.response_id, # Set from instance attribute
-                "agent_id": self.agent_id,       # Set from instance attribute
-                "survey_id": self.survey_id      # Set from instance attribute
+                "messages": [],  # Ensures messages array is created on first insert
+                "created_at": datetime.now(), 
+                "response_id": self.response_id, 
+                "agent_id": self.agent_id,       
+                "survey_id": self.survey_id      
             }
 
-            # Use update_one with upsert=True, $setOnInsert, and $push in one atomic operation.
-            # This ensures the document is created if it doesn't exist, sets initial metadata,
-            # and then pushes the message.
+            # 2. Find the current document state
+            current_doc_state = self.collection.find_one({"session_id": self.session_id})
+
+            if not current_doc_state:
+                # Case A: Document does NOT exist (first message of a new chat)
+                # Insert it cleanly with all metadata and an empty messages array.
+                logger.info(f"add_message: Document for session '{self.session_id}' not found. Inserting new document with initial metadata.")
+                initial_document = {
+                    "session_id": self.session_id, # Ensure session_id is also set
+                    **set_on_insert_fields # Unpack the fields defined for $setOnInsert
+                }
+                self.collection.insert_one(initial_document)
+                logger.info(f"add_message: New document created for session '{self.session_id}'.")
+            elif not isinstance(current_doc_state.get("messages"), list):
+                # Case B: Document EXISTS, but 'messages' field is missing or not an array.
+                # This explicitly fixes a malformed 'messages' field.
+                logger.warning(f"add_message: 'messages' field for session '{self.session_id}' is not an array. Fixing it to empty array.")
+                self.collection.update_one(
+                    {"session_id": self.session_id},
+                    {"$set": {"messages": []}}
+                )
+            
+            # 3. Now, the document is guaranteed to exist and its 'messages' field is an array (or will be created correctly).
+            # We can safely push the message.
             result = self.collection.update_one(
                 {"session_id": self.session_id},
-                {
-                    "$setOnInsert": set_on_insert_fields, # Fields to set ONLY if document is newly inserted
-                    "$push": {"messages": message_dict} # Always push the new message
-                },
-                upsert=True # Create the document if it doesn't exist
+                {"$push": {"messages": message_dict}}
             )
 
-            if result.matched_count > 0 or result.upserted_id: # Check if matched an existing doc or inserted a new one
-                logger.info(f"add_message: Message added successfully for session {self.session_id}. Matched: {result.matched_count}, Upserted ID: {result.upserted_id}.")
+            if result.matched_count > 0:
+                logger.info(f"add_message: Message added successfully for session {self.session_id}. Matched: {result.matched_count}.")
             else:
-                logger.warning(f"add_message: No document matched or upserted for session {self.session_id}. This should not happen.",)
-        except Exception as e:
-            logger.error(f"add_message: ERROR adding message for session {self.session_id}: {e}", exc_info=True)
+                logger.warning(f"add_message: WARNING: Document for session {self.session_id} not matched for push. This is unexpected after creation/fix!")
 
+        except Exception as e:
+            logger.error(f"add_message: CRITICAL ERROR adding message for session {self.session_id}: {e}", exc_info=True)
+            # Re-raise the exception to ensure Streamlit logs it properly if it's not caught higher up.
+            raise e 
+    # FIX END
     def clear(self) -> None:
         logger.info(f"clear: Attempting to clear session: {self.session_id}")
         try:
