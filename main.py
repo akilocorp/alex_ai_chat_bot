@@ -1,4 +1,6 @@
-
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: START ---
 # This MUST be at the very top, before any other imports that might touch sqlite3
 __import__('pysqlite3')
@@ -7,8 +9,8 @@ sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: END ---
 # --- NEW DEBUG: SQLITE3 VERSION CHECK ---
 import sqlite3 # Import the standard sqlite3 module *after* the override attempt
-print(f"DEBUG SQLITE3: Python's sqlite3 module is now loading from: {sys.modules['sqlite3'].__file__}")
-print(f"DEBUG SQLITE3: The linked SQLite3 C library version is: {sqlite3.sqlite_version}")
+logger.info(f"DEBUG SQLITE3: Python's sqlite3 module is now loading from: {sys.modules['sqlite3'].__file__}")
+logger.info(f"DEBUG SQLITE3: The linked SQLite3 C library version is: {sqlite3.sqlite_version}")
 if sqlite3.sqlite_version < '3.35.0':
     print(f"DEBUG SQLITE3: WARNING! SQLite3 version ({sqlite3.sqlite_version}) is still below 3.35.0 required by ChromaDB. This is likely the cause of the error.", file=sys.stderr)
 else:
