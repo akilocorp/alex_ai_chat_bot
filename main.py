@@ -50,7 +50,7 @@ MONGO_URI_VAL = get_secret("MONGO_URI") # Use a temporary variable for clarity d
 MONGO_DB_NAME_VAL = get_secret("MONGO_DB_NAME") # Use a temporary variable for clarity during check
 MONGO_COLLECTION_NAME_VAL = get_secret("MONGO_COLLECTION_NAME") # Use a temporary variable for clarity during check
 
-print(f"--- DEBUG MAIN: API Keys loaded: DASHSCOPE_API_KEY starts with {DASHSCOPE_API_KEY[:5] if DASHSCOPE_API_KEY else 'N/A'}, OPENAI_API_KEY starts with {OPENAI_API_KEY[:5] if OPENAI_API_KEY else 'N/A'} ---")
+# print(f"--- DEBUG MAIN: API Keys loaded: DASHSCOPE_API_KEY starts with {DASHSCOPE_API_KEY[:5] if DASHSCOPE_API_KEY else 'N/A'}, OPENAI_API_KEY starts with {OPENAI_API_KEY[:5] if OPENAI_API_KEY else 'N/A'} ---")
 
 
 # --- IMPORTANT FIX: Add explicit checks for all required secret values ---
@@ -189,7 +189,13 @@ chain_with_history = RunnableWithMessageHistory(
 )
 
 # 标题
-st.header("Alex")
+
+persist_dir = "./alex_characteristics"
+if os.path.exists(persist_dir):
+    st.header("It Works")
+   
+else:
+    st.header("No file")
 
 # 获取当前用户的历史记录
 current_history = history_factory(user_id)
