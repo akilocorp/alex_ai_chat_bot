@@ -71,7 +71,6 @@ from langchain_core.messages import HumanMessage, AIMessage
 
 #Change Api Keys to Secret Str
 Dashscope_api=convert_to_secret_str(DASHSCOPE_API_KEY)
-Openai_api=convert_to_secret_str(OPENAI_API_KEY)
 
 # 样式
 st.markdown("""
@@ -116,7 +115,7 @@ survey_id=st.query_params.get("surveyId", ["N/A"])[0]
 
 
 
-retriever = get_retriever(persist_directory="./alex_characteristics", collection_name="social_experiment", openai_api_key=Openai_api)
+retriever = get_retriever(persist_directory="./alex_characteristics", collection_name="social_experiment", _openai_api_key=OPENAI_API_KEY)
 
 # 唯一用户ID
 if "user_id" not in st.session_state:
