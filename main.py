@@ -133,8 +133,31 @@ agent_id=get_query_param_value("agentId")
 survey_id=get_query_param_value("surveyId")
 
 
+open_ai_key=convert_to_secret_str(OPENAI_API_KEY)
+embeddings_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=open_ai_key)
+try:
+        vector_store = Chroma(
+            persist_directory='./alex_characteristics',
+            embedding_function=embeddings_model,
+            collection_name='Social_experiment'
+        )
+        actual_doc_count = vector_store._collection.count()
+        print(f"--- DEBUG retriever_setup: Vector store loaded. Actual doc count: {actual_doc_count} ---") 
+except Exception as e:
+        st.error(f"Could not load Chroma vector store. Ensure ./alex_characteristics directory exists and is accessible. Error: {e}")
+        st.stop()
+        
+RETRIEVAL_K = min(3, actual_doc_count) # Set k to 3, but not more than available
+print(f"--- DEBUG retriever_setup: Retrieval K set to {RETRIEVAL_K} ---") 
 
-retriever = get_retriever(persist_directory="./alex_characteristics", collection_name="social_experiment", _openai_api_key=OPENAI_API_KEY)
+retriever = vector_store.as_retriever(
+        search_type="mmr", 
+        search_kwargs={
+            "k": RETRIEVAL_K,           
+            "lambda_mult": 0.5,         
+            "fetch_k": actual_doc_count # Fetch up to actual count to avoid warnings
+        }
+    )
 
 # 唯一用户ID
 if "user_id" not in st.session_state:
