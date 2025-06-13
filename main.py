@@ -50,7 +50,8 @@ def get_query_param_value(param_key: str, default_val: str = "N/A") -> str:
         return default_val
     if not param_list: # Parameter found, but its list of values is empty (e.g., ?param=)
         return default_val
-    return param_list[0] # Return the first value from the list
+    logger.info(param_list)
+    return param_list # Return the first value from the list
 
 
 def get_secret(key):
