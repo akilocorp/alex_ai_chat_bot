@@ -13,23 +13,30 @@ import json
 import uuid
 from langchain_chroma.vectorstores import Chroma
 from rag.retriever import get_retriever
-
-
 from langchain_community.chat_models.tongyi import ChatTongyi
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 import streamlit as st
-
 from dotenv import load_dotenv # Import load_dotenv
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from operator import itemgetter
 from database.database_utils import get_mongo_client_raw, MongoDBChatMessageHistory
 from database.mongo_setup import get_mongo_db_connection
 # Load environment variables from .env file
-load_dotenv()
 from langchain_openai.embeddings import OpenAIEmbeddings
+
+load_dotenv()
 # from components.sidebar_chat_list import render_sidebar_chat_list
+def get_query_param_value(param_key: str, default_val: str = "N/A") -> str:
+    """Safely retrieves a query parameter value, handling None or empty list cases."""
+    param_list = st.query_params.get(param_key)
+    if param_list is None: # Parameter not found in the URL at all
+        return default_val
+    if not param_list: # Parameter found, but its list of values is empty (e.g., ?param=)
+        return default_val
+    return param_list[0] # Return the first value from the list
+
 
 def get_secret(key):
     # Try to get from Streamlit secrets (for deployed apps)
@@ -109,9 +116,9 @@ llm = ChatTongyi(model="qwen-plus", api_key=Dashscope_api)
 mongo_client, mongo_db, mongo_collection=get_mongo_db_connection(mongo_uri=MONGO_URI_VAL, db_name=MONGO_DB_NAME_VAL, collection_name=MONGO_COLLECTION_NAME_VAL)
 
 #Get the parameters from the link
-response_id=st.query_params.get("responseId", ["N/A"])[0]
-agent_id=st.query_params.get("agentId", ["N/A"])[0]
-survey_id=st.query_params.get("surveyId", ["N/A"])[0]
+response_id=get_query_param_value("responseId")
+agent_id=get_query_param_value("agentId")
+survey_id=get_query_param_value("surveyId")
 
 
 
