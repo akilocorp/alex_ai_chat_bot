@@ -19,7 +19,7 @@ import streamlit as st
 from dotenv import load_dotenv # Import load_dotenv
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from operator import itemgetter
-from database.database_utils import get_mongo_client_raw, MongoDBChatMessageHistory
+from database.database_utils import MongoDBChatMessageHistory
 from database.mongo_setup import get_mongo_db_connection
 # Load environment variables from .env file
 from langchain_openai.embeddings import OpenAIEmbeddings
