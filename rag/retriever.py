@@ -38,6 +38,5 @@ def get_retriever(persist_directory: str, collection_name: str, _openai_api_key:
             "fetch_k": actual_doc_count # Fetch up to actual count to avoid warnings
         }
     )
-    st.success(f"Alex's characteristics vector store loaded successfully! (Documents in store: {actual_doc_count}, Retrieving K={RETRIEVAL_K}, Fetch K={actual_doc_count})")
     print("--- DEBUG retriever_setup: Retriever configured ---") 
     return retriever
