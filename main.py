@@ -118,7 +118,7 @@ survey_id=get_query_param_value("surveyId")
 
 
 
-retriever = get_retriever(persist_directory="../alex_characteristics", collection_name="social_experiment", _openai_api_key=OPENAI_API_KEY)
+retriever = get_retriever(persist_directory="./alex_characteristics", collection_name="social_experiment", _openai_api_key=OPENAI_API_KEY)
 
 # 唯一用户ID
 if "user_id" not in st.session_state:
@@ -191,7 +191,7 @@ chain_with_history = RunnableWithMessageHistory(
 # 标题
 
 cont=[]
-persist_dir = "../alex_characteristics"
+persist_dir = "./alex_characteristics"
 if os.path.exists(persist_dir):
      if os.path.isdir(persist_dir):
         # List all files and directories inside it
@@ -199,9 +199,8 @@ if os.path.exists(persist_dir):
         
         if contents:
             for item in contents:
-                if item is "b7893e57-d932-4d4b-96a1-412897d50c4b":
-
-                    cont.append(item)
+                print(item)
+                cont.append(item)
             st.header(f"Files{cont}")
         else:
             print(f"The folder '{persist_dir}' is empty.")
