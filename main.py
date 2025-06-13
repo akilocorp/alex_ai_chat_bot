@@ -12,6 +12,7 @@ import os
 import json
 import uuid
 from langchain_chroma.vectorstores import Chroma
+from rag.retriever import get_retriever
 
 
 from langchain_community.chat_models.tongyi import ChatTongyi
@@ -24,10 +25,11 @@ from dotenv import load_dotenv # Import load_dotenv
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from operator import itemgetter
 from database.database_utils import get_mongo_client_raw, MongoDBChatMessageHistory
+from database.mongo_setup import get_mongo_db_connection
 # Load environment variables from .env file
 load_dotenv()
 from langchain_openai.embeddings import OpenAIEmbeddings
-from components.sidebar_chat_list import render_sidebar_chat_list
+# from components.sidebar_chat_list import render_sidebar_chat_list
 
 def get_secret(key):
     # Try to get from Streamlit secrets (for deployed apps)
@@ -105,20 +107,7 @@ st.markdown("""
 # 模型
 llm = ChatTongyi(model="qwen-plus", api_key=Dashscope_api)
 
-# --- Cached MongoDB Client Connection (using get_mongo_client_raw from database_utils) ---
-@st.cache_resource
-def get_cached_mongo_client(mongo_uri):
-    """Establishes and caches a MongoDB client connection using the raw function."""
-    try:
-        client = get_mongo_client_raw(mongo_uri) # Call the function from database_utils
-        st.success("Successfully connected to MongoDB Atlas!")
-        return client
-    except Exception as e:
-        st.error(f"Could not connect to MongoDB Atlas: {e}. Please check your MONGO_URI.")
-        st.stop()
-mongo_client = get_cached_mongo_client(MONGO_URI_VAL)
-mongo_db:Database = mongo_client[MONGO_DB_NAME_VAL]
-mongo_collection:Collection = mongo_db[MONGO_COLLECTION_NAME_VAL]
+mongo_client, mongo_db, mongo_collection=get_mongo_db_connection(mongo_uri=MONGO_URI_VAL, db_name=MONGO_DB_NAME_VAL, collection_name=MONGO_COLLECTION_NAME_VAL)
 
 #Get the parameters from the link
 response_id=st.query_params.get("responseId", ["N/A"])[0]
@@ -126,41 +115,14 @@ agent_id=st.query_params.get("agentId", ["N/A"])[0]
 survey_id=st.query_params.get("surveyId", ["N/A"])[0]
 
 
-# --- RAG Setup: Load Vector Store and Create Retriever ---
-@st.cache_resource # Cache the vector store and embeddings to avoid reloading on every rerun
-def load_and_configure_retriever():
-    """Loads the OpenAI embeddings and the Chroma vector store, then creates a retriever."""
-    
-    embeddings_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=Openai_api)
 
-
-    
-    # Load the Chroma vector store from the persistent directory
-    # Ensure this path matches where you saved your vector store
-    vector_store = Chroma(
-        persist_directory="./alex_characteristics",
-        embedding_function=embeddings_model,
-        collection_name="social_experiment"
-    )
-
-    # Create the retriever from the loaded vector store
-    retriever = vector_store.as_retriever(
-        search_type="mmr", # Max Marginal Relevance for diverse results
-        search_kwargs={
-            "k": 3,           # Number of documents to retrieve
-            "lambda_mult": 0.5,
-             "fetch_k":2 # Balance between similarity and diversity (0.0 = diversity, 1.0 = similarity)
-        }
-    )
-    return retriever
-
-retriever = load_and_configure_retriever()
+retriever = get_retriever(persist_directory="./alex_characteristics", collection_name="social_experiment", openai_api_key=Openai_api)
 # --- End RAG Setup ---
 # 唯一用户ID
 if "user_id" not in st.session_state:
     st.session_state.user_id = str(uuid.uuid4())
 
-render_sidebar_chat_list(mongo_collection)
+# render_sidebar_chat_list(mongo_collection)
 
 
 
