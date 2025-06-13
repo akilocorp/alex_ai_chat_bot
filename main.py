@@ -190,9 +190,22 @@ chain_with_history = RunnableWithMessageHistory(
 
 # 标题
 
-persist_dir = ".../alex_characteristics"
+cont=[]
+persist_dir = "../alex_characteristics"
 if os.path.exists(persist_dir):
-    st.header("It Works")
+     if os.path.isdir(persist_dir):
+        # List all files and directories inside it
+        contents = os.listdir(persist_dir)
+        
+        if contents:
+            for item in contents:
+                print(item)
+                cont.append(item)
+            st.header(f"Files{cont}")
+        else:
+            print(f"The folder '{persist_dir}' is empty.")
+            st.header("empty folder")
+    
    
 else:
     st.header("No file")
