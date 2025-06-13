@@ -13,7 +13,6 @@ def get_mongo_db_connection(mongo_uri: str, db_name: str, collection_name: str) 
     print("--- DEBUG mongo_setup: Inside get_mongo_db_connection function ---") 
     try:
         client = get_mongo_client_raw(mongo_uri) # Get the raw PyMongo client
-        st.success("Successfully connected to MongoDB Atlas!")
         print("--- DEBUG mongo_setup: Successfully connected to MongoDB Atlas! ---")
         
         mongo_db: Database = client[db_name]
