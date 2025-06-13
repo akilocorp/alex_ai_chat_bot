@@ -1,7 +1,8 @@
 
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: START ---
 # This MUST be at the very top, before any other imports that might touch sqlite3
-
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: END ---
 from pymongo.database import Database  # NEW IMPORT for type hinting Database
 from pymongo.collection import Collection # Ensure this is imported for Collection type hinting (might already be there)
@@ -19,7 +20,7 @@ import streamlit as st
 from dotenv import load_dotenv # Import load_dotenv
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from operator import itemgetter
-from database.database_utils import MongoDBChatMessageHistory
+from database.database_utils import get_mongo_client_raw, MongoDBChatMessageHistory
 from database.mongo_setup import get_mongo_db_connection
 # Load environment variables from .env file
 from langchain_openai.embeddings import OpenAIEmbeddings
@@ -50,7 +51,7 @@ MONGO_URI_VAL = get_secret("MONGO_URI") # Use a temporary variable for clarity d
 MONGO_DB_NAME_VAL = get_secret("MONGO_DB_NAME") # Use a temporary variable for clarity during check
 MONGO_COLLECTION_NAME_VAL = get_secret("MONGO_COLLECTION_NAME") # Use a temporary variable for clarity during check
 
-# print(f"--- DEBUG MAIN: API Keys loaded: DASHSCOPE_API_KEY starts with {DASHSCOPE_API_KEY[:5] if DASHSCOPE_API_KEY else 'N/A'}, OPENAI_API_KEY starts with {OPENAI_API_KEY[:5] if OPENAI_API_KEY else 'N/A'} ---")
+print(f"--- DEBUG MAIN: API Keys loaded: DASHSCOPE_API_KEY starts with {DASHSCOPE_API_KEY[:5] if DASHSCOPE_API_KEY else 'N/A'}, OPENAI_API_KEY starts with {OPENAI_API_KEY[:5] if OPENAI_API_KEY else 'N/A'} ---")
 
 
 # --- IMPORTANT FIX: Add explicit checks for all required secret values ---
@@ -189,26 +190,7 @@ chain_with_history = RunnableWithMessageHistory(
 )
 
 # 标题
-
-cont=[]
-persist_dir = "./alex_characteristics"
-if os.path.exists(persist_dir):
-     if os.path.isdir(persist_dir):
-        # List all files and directories inside it
-        contents = os.listdir(persist_dir)
-        
-        if contents:
-            for item in contents:
-                print(item)
-                cont.append(item)
-            st.header(f"Files{cont}")
-        else:
-            print(f"The folder '{persist_dir}' is empty.")
-            st.header("empty folder")
-    
-   
-else:
-    st.header("No file")
+st.header("Alex")
 
 # 获取当前用户的历史记录
 current_history = history_factory(user_id)
