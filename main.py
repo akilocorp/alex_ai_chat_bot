@@ -249,9 +249,6 @@ if user_input:
         </div>
         ''', unsafe_allow_html=True)
         
-        current_history_obj = history_factory(user_id)
-        current_history_obj.add_message(HumanMessage(content=user_input))
-        current_history_obj.add_message(AIMessage(content=response.content))
 
     except Exception as e:
         # 显示错误信息
