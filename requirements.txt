@@ -11,5 +11,8 @@ python-dotenv~=1.0.1
 protobuf~=3.20 # Or specify a compatible range like '<=3.20.3' or '~=3.20'
 pysqlite3-binary~=0.5 
 dashscope~=1.23
-chroma~=0.2
+chroma~=0.4
+
+chromadb~=0.4
+
 
