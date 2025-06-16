@@ -24,6 +24,9 @@ from operator import itemgetter
 from database.database_utils import get_mongo_client_raw, MongoDBChatMessageHistory
 from database.mongo_setup import get_mongo_db_connection
 # Load environment variables from .env file
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 from langchain_openai.embeddings import OpenAIEmbeddings
 folder_path = "./alex_characteristics"
 if os.path.exists(folder_path):
