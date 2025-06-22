@@ -3,8 +3,23 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 # --- SHORT-TERM FIX FOR SQLITE3 ERROR: START ---
 # This MUST be at the very top, before any other imports that might touch sqlite3
+logger.info("--- main.py: Script start ---")
+# --- SHORT-TERM FIX FOR SQLITE3 ERROR: START ---
+# This MUST be at the very top, before any other imports that might touch sqlite3
+import sys
+try:
+    __import__('pysqlite3')
+    sys.modules['sqlite3'] = sys.modules['pysqlite3']
+    print("--- pysqlite3 fix applied successfully (from print) ---") # Reliable debug output
+    logger.info("--- pysqlite3 fix applied successfully (from logger) ---") # Will appear if logger is ready
+except ImportError:
+    print("--- WARNING: pysqlite3 not found or failed to import. Falling back to system sqlite3. ---")
+    logger.warning("--- WARNING: pysqlite3 not found or failed to import. Falling back to system sqlite3. ---")
+except Exception as e:
+    print(f"--- ERROR: Unexpected error during pysqlite3 swap: {e} ---")
+    logger.error(f"--- ERROR: Unexpected error during pysqlite3 swap: {e} ---", exc_info=True)
+# --- SHORT-TERM FIX FOR SQLITE3 ERROR: END ---
 
-import sqlite3 # Import the standard sqlite3 module *after* the override attempt
 from pymongo.database import Database  # NEW IMPORT for type hinting Database
 from pymongo.collection import Collection # Ensure this is imported for Collection type hinting (might already be there)
 from langchain_core.utils.utils import convert_to_secret_str
@@ -23,10 +38,13 @@ from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 from operator import itemgetter
 from database.database_utils import get_mongo_client_raw, MongoDBChatMessageHistory
 from database.mongo_setup import get_mongo_db_connection
-# Load environment variables from .env file
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+import boto3
+import json
+import streamlit as st
+
+logger.info("--- main.py: Imports complete ---")
+
+
 from langchain_openai.embeddings import OpenAIEmbeddings
 folder_path = "./alex_characteristics"
 if os.path.exists(folder_path):
@@ -56,6 +74,25 @@ def get_query_param_value(param_key: str, default_val: str = "N/A") -> str:
     logger.info(param_list)
     return param_list # Return the first value from the list
 
+# Function to get secrets (from previous example)
+def get_secrets_from_aws(secret_name="alex_secrets", region_name="us-east-2"):
+    client = boto3.client('secretsmanager', region_name=region_name)
+    try:
+        get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+    except Exception as e:
+        st.error(f"Failed to retrieve secret '{secret_name}' from AWS Secrets Manager: {e}")
+        return {} # Return empty dict on error
+    return json.loads(get_secret_value_response['SecretString'])
+
+# Load secrets from AWS (e.g., Secrets Manager) at application startup
+# This block runs when Streamlit starts the script
+if "aws_secrets_loaded" not in st.session_state:
+    aws_secrets = get_secrets_from_aws()
+    for key, value in aws_secrets.items():
+        os.environ[key] = value # Make them available as environment variables
+    st.session_state.aws_secrets_loaded = True
+    # For sensitive items, you might want to remove them from os.environ after st.secrets has picked them up
+    # However, for simplicity, leaving them in os.environ is common.
 
 def get_secret(key):
     # Try to get from Streamlit secrets (for deployed apps)

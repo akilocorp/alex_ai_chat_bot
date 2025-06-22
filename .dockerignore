@@ -1,0 +1,8 @@
+# enviroments
+.env
+.streamlit/secrets.toml
+
+# Other common ignores
+__pycache__/
+.venv/
+*.pyc
